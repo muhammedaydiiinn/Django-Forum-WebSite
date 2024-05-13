@@ -1,0 +1,15 @@
+.navbar-brand {
+    font-weight: bold;
+}
+.navbar-dark .navbar-brand {
+    color: #ffffff;
+}
+.navbar-dark .navbar-nav .nav-link {
+    color: #000000;
+}
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: #a6a6a6;
+}
+.bg-color{
+    background-color: #153448 !important
+}

@@ -1,0 +1,43 @@
+/* Avatar container */
+.avatar-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer; /* Cursor değiştirme */
+}
+
+/* Avatar */
+.avatar {
+    width: 30px; /* Avatar genişliği */
+    height: 30px; /* Avatar yüksekliği */
+    border-radius: 50%; /* Daire şeklinde border-radius */
+    margin-right: 5px; /* Avatar ile kullanıcı adı arasındaki boşluk */
+}
+
+/* Kullanıcı adı */
+.username {
+    color: white; /* Kullanıcı adı rengi */
+}
+
+/* Dropdown menüsü */
+.dropdown-menu {
+    background-color: #153448; /* Dropdown menüsü arka plan rengi */
+    border: none; /* Dropdown menüsü kenarlık yok */
+}
+
+/* Dropdown menüsü linkleri */
+.dropdown-item {
+    color: white; /* Dropdown menüsü linkleri rengi */
+    text-align: center; /* Linklerin ortalanması */
+}
+
+/* Aktif dropdown menüsü linki */
+.dropdown-item.active,
+.dropdown-item:active {
+    background-color: #495057; /* Aktif dropdown menüsü linki arka plan rengi */
+    color: white; /* Aktif dropdown menüsü linki yazı rengi */
+}
+
+/* Butonların genel stili */
+.btn {
+    margin-left: 5px; /* Butonlar arasındaki boşluk */
+}

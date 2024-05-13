@@ -1,0 +1,93 @@
+<div class="container">
+    <br>
+    <h3>En Çok Beğenilenler</h3>
+    <hr>
+    <div class="row">
+        {% for post in popular_posts %}
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="card mb-3 shadow">
+                    <div class="card-header d-flex justify-content-between align-items-center" style="height: 4rem; overflow: hidden;">
+                        <strong class="card-title" style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis;">{{ post.title|title }}</strong>
+                        {% if post.slug %}
+                            <a href="{% url 'post_detail' post.author post.slug %}" class="btn btn-secondary">Detay</a>
+                        {% else %}
+                            <p>Hata</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-body" style="overflow: hidden;  height: 4rem">
+                        <p class="card-text" id="content-{{ post.id }}"
+                           style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ post.content }}</p>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">Beğenme Sayısı: {{ post.likes }}</small>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <br>
+    <h3>En Son Tartışılanlar</h3>
+    <hr>
+    <div class="row">
+        {% for post in newest_posts %}
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="card mb-3 shadow">
+                    <div class="card-header d-flex justify-content-between align-items-center" style="height: 4rem; overflow: hidden;">
+                        <strong class="card-title" style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis;">{{ post.title|title }}</strong>
+                        {% if post.slug %}
+                            <a href="{% url 'post_detail' post.author post.slug %}" class="btn btn-secondary">Detay</a>
+                        {% else %}
+                            <p>Hata</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-body" style="overflow: hidden;  height: 4rem">
+                        <p class="card-text" id="content-{{ post.id }}"
+                           style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ post.content }}</p>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">Oluşturma Tarihi: {{ post.created_at }}</small>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    @media (max-width: 575.98px) {
+        .col-sm-6, .col-md-4, .col-lg-3 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        .card-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    @media (min-width: 576px) and (max-width: 767.98px) {
+        .col-md-4, .col-lg-3 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+
+        .card-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    @media (min-width: 768px) and (max-width: 991.98px) {
+        .col-lg-3 {
+            flex: 0 0 33.333333%;
+            max-width: 33.333333%;
+        }
+
+        .card-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+</style>

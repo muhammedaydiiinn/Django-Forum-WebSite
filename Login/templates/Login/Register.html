@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'asset/css/RegisterStyle.css' %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css"
+          integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+{% endblock %}
+{% block title %}Kayıt Ol{% endblock %}
+{% block content_nav %}
+    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+    </ul>
+{% endblock %}
+
+{% block content_body %}
+    <div class="container h-100">
+        <div class="d-flex justify-content-center h-100">
+            <div class="user_card">
+                <div class="d-flex justify-content-center">
+                    <h3 id="form-title">KAYIT OL</h3>
+                </div>
+                <div class="d-flex justify-content-center form_container">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                </div>
+                                <input type="text" name="{{ form.username.name }}" placeholder="Kullanıcı Adı"
+                                       class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                </div>
+                                <input type="email" name="{{ form.email.name }}" placeholder="E-posta"
+                                       class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                </div>
+                                <input type="password" name="{{ form.password1.name }}" placeholder="Şifre"
+                                       class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                </div>
+                                <input type="password" name="{{ form.password2.name }}" placeholder="Şifre Doğrulama"
+                                       class="form-control" required>
+                            </div>
+                        </div>
+
+
+                        {% if form.errors %}
+                            <div id="messages">
+                                {% if form.password1.errors %}
+                                    {{ form.password1.errors }}
+                                {% endif %}
+                                {% if form.password2.errors %}
+                                    {{ form.password2.errors }}
+                                {% endif %}
+                                {% if form.username.errors %}
+                                    {{ form.username.errors }}
+                                {% endif %}
+                                {% if form.email.errors %}
+                                    {{ form.email.errors }}
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <div class="mt-4">
+                            <div class="d-flex justify-content-center links">
+                                <div class="text-bottom">Hesabınız var mı?</div>
+                                <a href="{% url 'login' %}" class="ml-2">Giriş Yap</a>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center mt-3 login_container">
+                            <input class="btn login_btn" type="submit" value="Kayıt Ol">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js_files %}
+    <script src="{% static 'asset/js/RegisterScript.js' %}"></script>
+{% endblock %}

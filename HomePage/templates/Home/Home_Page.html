@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block css_files %}
+    {#    css dosyaları #}
+{% endblock %}
+
+{% block title %}Anasayfa{% endblock %}
+{% block content_nav %}
+{% endblock %}
+{% block content_body %}
+    <div class="container mt-3">
+        {% include 'Home/_search.html' %}
+        {% include 'Home/_homeBody.html' %}
+    </div>
+{% endblock %}

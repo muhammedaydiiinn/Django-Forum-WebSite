@@ -1,0 +1,101 @@
+<div class="container mb-2">
+    <div class="row">
+        <div class="col-md-12">
+            <form class="row" role="search" action="{% url 'search_view' %}" method="POST">
+                {% csrf_token %}
+                <div class="col-8 col-md-6 position-relative"> <!-- Arama kutusu -->
+                    <input id="search_here" class="form-control" type="search" placeholder="Forumda Ara"
+                           aria-label="Search" name="searched">
+
+                    <div id="result_box"
+                         class="position-absolute w-100"
+                         style="background-color: #dedede; border-bottom-left-radius: 15px;border-bottom-right-radius: 15px;z-index: 100;"></div>
+                </div>
+                <div class="col-2 col-md-3"> <!-- Arama butonu -->
+                    <button class="btn btn-dark" type="submit">Ara</button>
+                </div>
+                <div class="col-2 col-md-3 text-end"> <!-- Diğer buton -->
+                    {% if user.is_authenticated and not user.is_superuser %}
+                        {% load static %}
+                        <div class="col-md-12"> <!-- Sağa yaslanan yeni konu butonu -->
+                            <a class="btn btn-outline-dark mb-3" href="{% url 'create_topic' %}" id="new-topic-link">
+                                <i class="fas fa-plus-circle me-2"></i> Yeni Konu
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const data = '{{ qs_json }}';
+    const rdata = JSON.parse(data.replace(/&quot;/g, '"'));
+    const input = document.getElementById('search_here');
+    const box = document.getElementById('result_box');
+
+    let filter_arr = [];
+
+    input.addEventListener('input', (e) => {
+        const searchText = e.target.value.trim().toLowerCase();
+        box.innerHTML = "";
+
+        if (searchText !== '') {
+            filter_arr = rdata.filter(info =>
+                info['title'].toLowerCase().includes(searchText) ||
+                (info['content'] && info['content'].toLowerCase().includes(searchText))
+            );
+
+            // En fazla 5 gönderi göster
+            filter_arr = filter_arr.sort((a, b) => b.likes - a.likes).slice(0, 5);
+
+            if (filter_arr.length > 0) {
+                filter_arr.forEach(info => {
+                    const boldTitle = info['title'].replace(new RegExp(searchText, 'gi'), (match) => `<b>${match}</b>`);
+                    let resultText = `${boldTitle}`;
+                    if (info['content']) {
+                        const contentWords = info['content'].split(' ').slice(0, 5);
+                        const contentSnippet = contentWords.join(' ');
+                        const boldContentSnippet = contentSnippet.replace(new RegExp(searchText, 'gi'), (match) => `<b>${match}</b>`);
+                        resultText += `<span class="description">${boldContentSnippet}...</span>`;
+                    }
+                    const resultItem = `<div class="result-item"><a href="/${info['author__username']}/${info['slug']}" style="text-decoration: none; color: #343a40">${resultText}</a></div>`;
+                    box.innerHTML += resultItem;
+                });
+            } else {
+                box.innerHTML = '<div class="no-result"><b>Sonuç yok</b></div>';
+            }
+        } else {
+            box.innerHTML = "";
+        }
+    });
+</script>
+
+<style>
+    .description {
+        float: right;
+        color: #949393;
+        font-size: 0.9em;
+    }
+
+    .result-item {
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+        z-index: 100;
+    }
+
+    .result-item:hover {
+        background-color: #a8a7a7;
+    }
+
+    .no-result {
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+</style>

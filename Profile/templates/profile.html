@@ -1,0 +1,260 @@
+<div class="container-xl px-4 mt-4">
+    <div class="row">
+        <div class="col-xl-4">
+            <!-- Profil resmi kartı -->
+            <div class="card mb-4 mb-xl-0">
+                <div class="card-header">Profil Resmi</div>
+                <div class="card-body text-center">
+                    <!-- Profil resmi görüntü -->
+                    <img id="profileImage" class="img-account-profile mb-2"
+                         src="{{ user.profile.profile_pic.url }}"
+                         alt="Profil Resmi">
+                    <!-- Profil resmi güncelleme formu -->
+                    <form id="updateProfilePictureForm" method="post" enctype="multipart/form-data"
+                          action="{% url 'update_profile_picture' %}">
+                        {% csrf_token %}
+                        <input type="file" name="profile_pic" accept="image/*" style="display: none;"
+                               id="profilePicInput">
+                        <button type="button" id="selectProfilePicBtn" class="btn btn-sm btn-secondary">Yeni resim seç
+                        </button>
+                        <div id="profileSpinner" class="spinner-border spinner-border-sm ml-2" role="status"
+                             style="display: none;"></div>
+                        <button type="submit" id="updateProfilePicBtn" class="btn btn-sm btn-success"
+                                style="display: none;">
+                            Kaydet
+                        </button>
+                        <button type="button" id="cancelUpdateProfilePicBtn" class="btn btn-sm btn-secondary"
+                                style="display: none;">İptal
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <!-- Hesap detayları kartı -->
+            <div class="card mb-4">
+                <div class="card-header">Hesap Detayları</div>
+                <div class="card-body">
+                    <form id="updateProfileForm" method="post" action="{% url 'update_profile' %}">
+                        {% csrf_token %}
+                        <!-- Form Grubu (kullanıcı adı)-->
+                        <div class="mb-3">
+                            <label class="small mb-1" for="inputUsername">Kullanıcı Adı</label>
+                            <input class="form-control" id="inputUsername" name="username" type="text"
+                                   placeholder="Kullanıcı adınızı girin" value="{{ user.username }}">
+                        </div>
+                        <!-- Form Satırı-->
+                        <div class="row gx-3 mb-3">
+                            <!-- Form Grubu (ad)-->
+                            <div class="col-md-6">
+                                <label class="small mb-1" for="inputFirstName">Ad</label>
+                                <input class="form-control" id="inputFirstName" name="first_name" type="text"
+                                       placeholder="Adınızı girin" value="{{ user.first_name }}">
+                            </div>
+                            <!-- Form Grubu (soyad)-->
+                            <div class="col-md-6">
+                                <label class="small mb-1" for="inputLastName">Soyad</label>
+                                <input class="form-control" id="inputLastName" name="last_name" type="text"
+                                       placeholder="Soyadınızı girin" value="{{ user.last_name }}">
+                            </div>
+                        </div>
+                        <!-- Form Grubu (email adresi)-->
+                        <div class="mb-3">
+                            <label class="small mb-1" for="inputEmailAddress">E-posta Adresi</label>
+                            <input class="form-control" id="inputEmailAddress" name="email" type="email"
+                                   placeholder="E-posta adresinizi girin" value="{{ user.email }}">
+                        </div>
+                        <!-- Değişiklikleri kaydet düğmesi-->
+                        <button id="updateProfileBtn" class="btn btn-sm btn-secondary" type="submit"
+                                disabled>Değişiklikleri Kaydet
+                        </button>
+
+                        <div id="profileUpdateSpinner" class="spinner-border spinner-border-sm" role="status"
+                                 style="display: none;"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card mb-4">
+                <div class="card-header">Şifre Değiştir</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <form id="changePasswordForm" method="post" action="{% url 'profile' %}">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            <button id="changePasswordBtn" class="btn btn-sm btn-secondary" type="button">Şifreyi
+                                Değiştir
+                            </button>
+                            <div id="passwordSpinner" class="spinner-border spinner-border-sm ml-2" role="status"
+                                 style="display: none;"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="text-center mt-3">
+        <div id="updateSuccessMessage" class="alert alert-success" style="display: none;" role="alert">Profil resmi
+            başarıyla güncellendi.
+        </div>
+    </div>
+    <div class="text-center mt-3">
+        <div id="updateSuccessMessagePass" class="alert alert-success" style="display: none;" role="alert">Şifreniz
+            başarıyla güncellendi. Çıkış yapılıyor...
+        </div>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Profil resmi seçme butonuna tıklanınca
+        $('#selectProfilePicBtn').click(function () {
+            $('#profilePicInput').click();
+        });
+
+        // Profil resmi seçildiğinde
+        $('#profilePicInput').change(function () {
+            var input = this;
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#profileImage').attr('src', e.target.result);
+                    $('#updateProfilePicBtn').show();
+                    $('#cancelUpdateProfilePicBtn').show();
+                    $('#selectProfilePicBtn').hide();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        });
+
+        // Form değerleri değiştirildiğinde
+        $('input').on('input', function () {
+            // Herhangi bir input alanı değiştiğinde, değişiklikleri kaydet butonunu aktif hale getir
+            $('#updateProfileBtn').prop('disabled', false);
+        });
+
+        // Profil resmi güncelleme formunu submit ettiğimizde
+        $('#updateProfilePictureForm').submit(function (e) {
+            e.preventDefault(); // Formun varsayılan davranışını iptal et
+
+            // Spinner'ı görünür yap
+            $('#profileSpinner').show();
+
+            var form = $(this);
+            var formData = new FormData(this);
+
+            $.ajax({
+                type: 'POST',
+                url: form.attr('action'),
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    // Başarılı yanıt alındığında mesajı göster
+                    $('#updateSuccessMessage').text(response.message).show();
+                    // Yeni resim seç butonunu göster, diğer butonları gizle
+                    $('#profileSpinner').hide();
+                    $('#selectProfilePicBtn').show();
+                    $('#updateProfilePicBtn').hide();
+                    $('#cancelUpdateProfilePicBtn').hide();
+                    // Mesajı 5 saniye sonra gizle
+                    setTimeout(function () {
+                        $('#updateSuccessMessage').fadeOut();
+                    }, 5000);
+                },
+                error: function (xhr, status, error) {
+                    // Hata durumunda uygun işlemler yapılabilir
+                    console.error(error);
+                }
+            });
+        });
+
+        // Diğer form verileri güncellendiğinde
+        $('#updateProfileForm').submit(function (e) {
+            e.preventDefault(); // Formun varsayılan davranışını iptal et
+
+            // Spinner'ı görünür yap, butonları devre dışı bırak
+            $('#profileUpdateSpinner').show();
+            $('#updateProfileBtn').prop('disabled', true);
+
+            var form = $(this);
+            var formData = new FormData(this);
+
+            $.ajax({
+                type: 'POST',
+                url: form.attr('action'),
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    // Başarılı yanıt alındığında mesajı göster
+                    $('#updateSuccessMessage').text(response.message).show();
+                    // Güncelleme butonunu gizle
+                    $('#updateProfileBtn').prop('disabled', true);
+                    // Mesajı 5 saniye sonra gizle
+                    setTimeout(function () {
+                        $('#updateSuccessMessage').fadeOut();
+                    }, 5000);
+                },
+                error: function (xhr, status, error) {
+                    // Hata durumunda uygun işlemler yapılabilir
+                    console.error(error);
+                },
+                complete: function () {
+                    // İsteğin tamamlandığında yapılacaklar
+                    $('#profileUpdateSpinner').hide();
+                    $('#updateProfileBtn').prop('disabled', false);
+                }
+            });
+        });
+
+        $('#cancelUpdateProfilePicBtn').click(function () {
+            $('#profileImage').attr('src', "{{ user.profile.profile_pic.url }}");
+            $('#updateProfilePicBtn').hide();
+            $('#cancelUpdateProfilePicBtn').hide();
+            $('#selectProfilePicBtn').show();
+            $('#profilePicInput').val('');
+        });
+
+        $('#changePasswordBtn').click(function () {
+            var form = $('#changePasswordForm');
+            var spinner = form.find('.spinner-border');
+
+            // Spinner'ı görünür yap
+            spinner.show();
+
+            $.ajax({
+                type: 'POST',
+                url: form.attr('action'), // Formun action attribute'ünden URL alınır
+                data: form.serialize(), // Form verileri serialize edilir
+                success: function (response) {
+                    // Başarılı yanıt geldiğinde yapılacaklar
+                    $('#updateSuccessMessagePass').fadeIn().delay(1500).fadeOut(function () {
+                        // Başarı mesajını gösterdikten sonra çıkış yap
+                        window.location.href = "{% url 'login' %}";
+                    });
+                },
+                error: function (error) {
+                    // Hata olduğunda yapılacaklar
+                    console.log(error); // Hata mesajını konsola yazdırabilirsiniz
+                },
+                complete: function () {
+                    // İsteğin tamamlandığında yapılacaklar
+                    // Spinner'ı gizle
+                    spinner.hide();
+                }
+            });
+        });
+    });
+
+    // Mesajları sayfanın ortasına taşı
+    $(document).ready(function () {
+        var messages = $('#updateSuccessMessage, #updateSuccessMessagePass');
+        messages.addClass('position-absolute top-90 start-50 translate-middle');
+        messages.css('z-index', '1000');
+    });
+
+</script>

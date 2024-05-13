@@ -1,0 +1,280 @@
+<style>
+    .like-button {
+        border: none;
+        background: none;
+    }
+
+    .alert-container {
+        z-index: 1000; /* Mesajlar diğer öğelerin üstünde olmalı */
+    }
+
+    /* Ortalanmış konumlandırma için gerekli stil */
+    .position-absolute {
+        position: absolute !important;
+    }
+
+    .top-50 {
+        top: 50%;
+    }
+
+    .start-50 {
+        left: 50%;
+    }
+
+    .translate-middle {
+        transform: translate(-50%, -50%);
+    }
+</style>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title">{{ post.title|title }}</h5>
+                    <p class="card-text">Yazar: {{ post.author.username }}</p>
+                    <p class="card-text">Oluşturulma Tarihi: {{ post.created_at }}</p>
+                </div>
+                {% if request.user.is_authenticated and request.user == post.author %}
+                    <div>
+                        <a href="{% url 'edit_post' post.author.username post.slug %}"
+                           class="btn btn-sm btn-secondary edit-post-btn">Düzenle</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-body">
+            <p class="card-text">{{ post.content | safe }}</p>
+        </div>
+    </div>
+
+    <!-- Beğeni artırma butonu -->
+    <div class="mt-4">
+        <div class="row align-items-center">
+            <div class="col">
+                <button class="like-button"
+                        data-author="{{ post.author.username }}" data-slug="{{ post.slug }}">
+                    <i class="fas fa-thumbs-up"></i> <span class="like-count">{{ post.likes }}</span>
+                </button>
+                <div class="spinner-border spinner-border-sm" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Uyarı mesajları için container -->
+    <div class="alert-container position-absolute top-50 start-50 translate-middle">
+        <!-- Beğeni yapma uyarısı -->
+        <div id="updateDangerMessageLike" class="alert alert-danger" style="display: none;" role="alert">
+            Beğenebilmek için giriş yapmanız gerekiyor.
+        </div>
+        <!-- Yorum yapma uyarısı -->
+        <div id="updateDangerMessageComment" class="alert alert-danger" style="display: none;" role="alert">
+            Yorum yapabilmek için giriş yapmanız gerekiyor.
+        </div>
+        <!-- Yorum yapıldı uyarısı -->
+        <div id="updateSuccessMessageComment" class="alert alert-success" style="display: none;" role="alert">
+            Yorum yapıldı!
+        </div>
+        <div id="updateSuccessLike" class="alert alert-success" style="display: none;" role="alert">
+            Beğenildi
+        </div>
+        <div id="updateDangerLike" class="alert alert-danger" style="display: none;" role="alert">
+            Beğenilmedi
+        </div>
+    </div>
+
+    <!-- Yorum yapma formu -->
+    <div class="mt-4">
+        <h5>Yorum Yap</h5>
+        {% if request.user.is_authenticated %}
+            <form id="comment-form" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                <textarea class="form-control" id="commentContent" name="content" rows="3"
+                          placeholder="Yorumunuzu buraya yazın" required></textarea>
+                </div>
+                <div class="row align-items-center">
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary mt-2">Gönder</button>
+                        <div class="spinner-border spinner-border-sm ml-5" role="status" style="display: none;vertical-align: -.500em !important;"></div>
+                    </div>
+                </div>
+            </form>
+        {% else %}
+            <p>Yorum yapabilmek için giriş yapmalısınız.</p>
+        {% endif %}
+    </div>
+
+    <!-- Yorumlar -->
+    <div class="mt-4 mb-4" id="comment-section">
+        <h5>Yorumlar</h5>
+        <div class="text-center">
+            <div class="spinner-border" role="status" style="display: none;"></div>
+        </div>
+        <div id="comments-list">
+            {% if not comments %}
+
+            {% else %}
+                <!-- Yorumlar JavaScript ile buraya eklenecek -->
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    var liked = false; // Beğenme durumu
+
+    // Sayfa yüklendiğinde beğeni durumunu kontrol etmek için AJAX isteği gönder
+    $(document).ready(function () {
+        checkLikeStatus(); // Beğeni durumunu kontrol et
+        fetchComments(); // Yorumları getir
+    });
+
+    // Beğeni durumunu kontrol etmek için AJAX işlevselliği
+    function checkLikeStatus() {
+        var button = $('.like-button');
+        var author = button.data('author');
+        var slug = button.data('slug');
+
+        $.ajax({
+            type: 'GET',
+            url: '/check-like-status/' + author + '/' + slug + '/',
+            success: function (response) {
+                liked = response.liked; // Sunucudan beğeni durumunu al
+                updateButtonColor(); // Buton rengini güncelle
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    // Beğeni butonu için AJAX işlevselliği
+    $('.like-button').click(function () {
+        var button = $(this);
+        var author = button.data('author');
+        var slug = button.data('slug');
+        var likeCount = button.find('.like-count');
+        var spinner = button.closest('.mt-4').find('.spinner-border'); // Spinner'ı bul
+
+        // Spinner'ı görünür yap
+        spinner.show();
+
+        // Kullanıcı giriş yapmamışsa uyarı göster
+        if (!{{ request.user.is_authenticated|lower }}) {
+            $('#updateDangerMessageLike').fadeIn().delay(5000).fadeOut(); // 5 saniye sonra uyarıyı gizle
+            // Spinner'ı gizle
+            spinner.hide();
+            return; // İşlemi sonlandır
+        }
+
+        // AJAX ile beğeni işlemini gerçekleştir
+        $.ajax({
+            type: 'POST',
+            url: '/increase-likes/' + author + '/' + slug + '/',
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function (response) {
+                likeCount.text(response.likes);
+                liked = response.liked; // Beğenme durumunu güncelle
+                updateButtonColor(); // Buton rengini güncelle
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            },
+            complete: function () {
+                // Spinner'ı gizle
+                spinner.hide();
+            }
+        });
+    });
+
+    // Buton rengini güncellemek için işlev
+    function updateButtonColor() {
+        var button = $('.like-button');
+        if (liked) {
+            button.css('color', '#2d6b0a'); // Beğenilmiş ise yeşil
+        } else {
+            button.css('color', '#383737'); // Beğenilmemiş ise orijinal renk
+        }
+    }
+
+    // AJAX ile mevcut yorumları getir
+    function fetchComments() {
+        $('#comment-section .spinner-border').show();
+        $.ajax({
+            type: 'GET',
+            url: window.location.href,
+            success: function (response) {
+                $('#comment-section .spinner-border').hide();
+                if (response.comments.length > 0) {
+                    displayComments(response.comments);
+
+                } else {
+                    $('#comments-list').html('<p>Bulunamadı</p>');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    // Yorumları ekrana yazdırmak için işlev
+    function displayComments(comments) {
+        $('#comment-section .spinner-border').show();
+        var commentsList = $('#comments-list');
+        commentsList.empty(); // Önceki yorumları temizle
+
+
+        // Yeni yorumları ekle ve yavaşça göster
+        for (var i = 0; i < comments.length; i++) {
+            var comment = comments[i];
+            var commentCard = '<div class="card mt-2">' +
+                '<div class="card-body">' +
+                '<p class="card-text">' + comment.content + '</p>' +
+                '<p class="card-text">Yazar: ' + comment.author + '</p>' +
+                '<p class="card-text">Tarih: ' + comment.created_at + '</p>' +
+                '</div></div>';
+            $('#comment-section .spinner-border').hide();
+            commentsList.append(commentCard).hide().fadeIn('slow');
+        }
+    }
+
+    // Yorum yapma formunu submit etme
+    $(document).on('submit', '#comment-form', function (e) {
+        e.preventDefault();
+
+        // Döner yüklenme göstergesini görünür yap
+        $('#comment-form .spinner-border').show();
+
+        $.ajax({
+            type: 'POST',
+            url: window.location.href,
+            data: {
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                'content': $('#commentContent').val()
+            },
+            success: function (response) {
+                // Yeni yorumları ekrana yazdır
+                displayComments(response.comments);
+                $('#commentContent').val(''); // Yorum alanını temizle
+                // Yorum yapıldı mesajını göster
+                $('#updateSuccessMessageComment').fadeIn().delay(5000).fadeOut(); // 5 saniye sonra uyarıyı gizle
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            },
+            complete: function () {
+                // Gönder düğmesini ve döner yüklenme göstergesini tekrar göster
+                $('#comment-form .spinner-border').hide();
+            }
+        });
+    });
+</script>

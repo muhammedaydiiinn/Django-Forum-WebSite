@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'asset/css/profile_update.css' %}">
+{% endblock %}
+
+{% block title %}Yaptıklarım{% endblock %}
+{% block content_nav %}
+{% endblock %}
+{% block content_body %}
+    <div class="container mt-3">
+        <h3>Açtığım Konular</h3>
+        <hr>
+        {% if not posts %}
+            <p>Bulunamadı</p>
+        {% else %}
+            {% for post in posts %}
+                <div class="col-md-12 mb-3">
+                    <div class="card mb-3 shadow">
+                        <div class="card-header d-flex justify-content-between align-items-center"
+                             style="height: 4rem; overflow: hidden;">
+                            <strong class="card-title" style="flex-grow: 1">{{ post.title|title }}</strong>
+                            {% if post.slug %}
+                                <a href="{% url 'post_detail' post.author post.slug %}" class="btn btn-secondary">Detay</a>
+                            {% else %}
+                                <p>Hata</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-body" style="overflow: hidden;  height: 4rem">
+                            <p class="card-text" id="content-{{ post.id }}"
+                               style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ post.content }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">Beğenme Sayısı: {{ post.likes }}</small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <h3>Yaptığım Yorumlar</h3>
+        <hr>
+        {% if not comments_with_posts %}
+            <p>Bulunamadı</p>
+        {% else %}
+            {% for comment, post in comments_with_posts %}
+                <div class="col-md-12 mb-3">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Gönderi Başlığı: {{ post.title }}</h5>
+                                    <p class="card-text">Yazar: {{ post.author.username }}</p>
+                                </div>
+                                <div>
+                                    <a href="{% url 'edit_post' post.author.username post.slug %}"
+                                       class="btn btn-sm btn-secondary edit-post-btn">Detay</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Yorum: {{ comment.content }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <h3>Beğenilenler</h3>
+        <hr>
+        <div class="row">
+            {% if not likes_with_posts %}
+                <p>Bulunamadı</p>
+            {% else %}
+                {% for like, post in likes_with_posts %}
+                    <div class="col-md-3">
+                        <div class="card mb-3 shadow" style="max-width: 18rem;">
+                            <div class="card-header d-flex justify-content-between align-items-center"
+                                 style="height: 4rem; overflow: hidden;">
+                                <strong class="card-title" style="flex-grow: 1">{{ post.title|title }}</strong>
+                                <a href="{% url 'post_detail' post.author post.slug %}" class="btn btn-secondary">Detay</a>
+                            </div>
+                            <div class="card-body" style="overflow: hidden; height: 4rem">
+                                <p class="card-text" id="content-{{ post.id }}"
+                                   style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ post.content }}</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted">Beğenme Sayısı: {{ post.likes }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block js_files %}
+
+{% endblock %}

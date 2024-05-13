@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}{% endblock %} | AydınKafa Forum</title>
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css"
+          integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Dosis:wght@200..800&family=Poetsen+One&display=swap"
+          rel="stylesheet">
+    <link rel="shortcut icon" href="{% static 'asset/img/favicon/icon.ico' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'asset/css/base.css' %}">
+    {% block css_files %}{% endblock %}
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            background: #abc9dc !important;
+            font-family: "Dosis", sans-serif;
+            font-optical-sizing: auto;
+            font-style: normal;
+        }
+
+        /* Genel scrollbar stilleri */
+        ::-webkit-scrollbar {
+            width: 5px; /* scrollbar genişliği */
+        }
+
+        /* Track (çubuğun arkası) */
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; /* arkadaki rengi */
+        }
+
+        /* Handle (çubuk) */
+        ::-webkit-scrollbar-thumb {
+            background: #888; /* çubuk rengi */
+        }
+
+        /* Handle on hover (üzerine gelindiğinde) */
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; /* çubuk rengi */
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-color">
+    <div class="container">
+        <a class="navbar-brand m-2" href="{% url 'home' %}">AydınKafa Forum</a>
+        {% if user.is_authenticated %}
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        {% endif %}
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            {% include 'Home/_UserNavbar.html' %}
+        </div>
+    </div>
+</nav>
+{% block content_body %}{% endblock %}
+{% block js_files %}{% endblock %}
+</body>
+</html>

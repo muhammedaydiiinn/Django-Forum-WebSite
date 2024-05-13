@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block css_files %}
+    {# css dosyaları #}
+{% endblock %}
+
+{% block title %}Arama Sonuçları{% endblock %}
+{% block content_nav %}
+{% endblock %}
+{% block content_body %}
+    <div class="container mt-3">
+        {% include 'Home/_search.html' %}
+        <h3>Arama Sonuçları</h3>
+        <hr>
+        {% if searched_posts %}
+            {% for post in searched_posts %}
+                <div class="col-md-12">
+                    <div class="card mb-3 shadow">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <strong class="card-title">
+                                {% for word in post.title.split %}
+                                    {% if word == searched %}
+                                        <span style="background-color: yellow">{{ word }}</span>
+                                    {% else %}
+                                        {{ word }}
+                                    {% endif %}
+                                {% endfor %}
+                            </strong>
+                            <a href="{% url 'post_detail' post.author post.slug %}" class="btn btn-secondary">Detay</a>
+                        </div>
+                        <div class="card-body" style="height: 70px; overflow-y: auto;">
+                            <p class="card-text" id="content-{{ post.id }}">
+                                {% for word in post.content.split %}
+                                    {% if word == searched %}
+                                        <span style="background-color: yellow">{{ word }}</span>
+                                    {% else %}
+                                        {{ word }}
+                                    {% endif %}
+                                {% endfor %}
+                            </p>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between align-items-center">
+                            <small class="text-muted">Beğenme Sayısı: {{ post.likes }}</small>
+                            <small class="text-muted">Oluşturma Tarihi: {{ post.created_at }}</small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            Sonuç bulunamadı...
+        {% endif %}
+    </div>
+{% endblock %}

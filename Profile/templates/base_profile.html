@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'asset/css/profile_update.css' %}">
+{% endblock %}
+
+{% block title %}Profil{% endblock %}
+{% block content_nav %}
+{% endblock %}
+{% block content_body %}
+   <div class="container mt-3">
+    {% include 'profile.html' %}
+</div>
+{% endblock %}
+
+{% block js_files %}
+{% endblock %}
