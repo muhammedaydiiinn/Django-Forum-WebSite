@@ -222,7 +222,8 @@
         $('#changePasswordBtn').click(function () {
             var form = $('#changePasswordForm');
             var spinner = form.find('.spinner-border');
-
+            var intervalId = localStorage.getItem('intervalId');
+            clearInterval(intervalId);
             // Spinner'ı görünür yap
             spinner.show();
 

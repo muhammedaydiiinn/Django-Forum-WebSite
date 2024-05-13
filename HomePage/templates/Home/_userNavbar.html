@@ -16,20 +16,20 @@
             <ul class="dropdown-menu dropdown-menu-end mt-3" aria-labelledby="navbarDropdown">
                 <li><a class="dropdown-item" href="{% url 'profile' %}">Profil</a></li>
                 <li><a class="dropdown-item" href="{% url 'my_topics' %}">Yaptıklarım</a></li>
-                <li><a class="dropdown-item" href="{% url 'logout' %}">Çıkış yap</a></li>
+                <li><a class="dropdown-item" href="{% url 'logout' %}" id="logoutBtn">Çıkış yap</a></li> <!-- ID ekledik -->
             </ul>
         </li>
     </ul>
 {% else %}
     {% if not is_login_page %}
-    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-            <a class="btn btn-dark m-2" href="{% url 'login' %}?next={{ request.path }}">Üye Girişi</a>
-        </li>
-        <li class="nav-item">
-            <a class="btn btn-dark m-2" href="{% url 'register' %}">Kayıt Ol</a>
-        </li>
-    </ul>
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+                <a class="btn btn-dark m-2" href="{% url 'login' %}?next={{ request.path }}">Üye Girişi</a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-dark m-2" href="{% url 'register' %}">Kayıt Ol</a>
+            </li>
+        </ul>
     {% endif %}
 {% endif %}
 
@@ -49,10 +49,16 @@
                     }
                 });
             }
-
             // Sayfa yüklendiğinde ve her 1 saniyede bir profil fotoğrafını güncelle
-            updateProfileImage(); // İlk defa çağrıldığında
-            setInterval(updateProfileImage, 1000); // Her 1 saniyede bir çağrılacak
+            var intervalId = setInterval(updateProfileImage, 1000); // intervalId ekledik
+
+            localStorage.setItem('intervalId', intervalId);
         }
+
+        // Çıkış butonuna tıklandığında
+        $('#logoutBtn').click(function() {
+            // setInterval'i durdur
+            clearInterval(intervalId);
+        });
     });
 </script>
