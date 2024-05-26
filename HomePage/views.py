@@ -6,6 +6,7 @@ from .forms import NewContentForm
 from django.http import JsonResponse
 from Content.models import Like
 from django.utils import timezone
+from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 
 
 def home_view(request):
@@ -58,9 +59,34 @@ def create_topic(request):
         if forms.is_valid():
             topic_title = forms.cleaned_data['topic_title']
             topic_content = forms.cleaned_data['topic_content']
-            new_topic = Post(title=topic_title, content=topic_content, author=request.user)
-            new_topic.save()
-            return redirect('post_detail', author=request.user.username, slug=new_topic.slug)
+
+            # Metin sınıflandırma modelini yükleme
+            tokenizer = AutoTokenizer.from_pretrained("savasy/bert-turkish-text-classification")
+            model = AutoModelForSequenceClassification.from_pretrained("savasy/bert-turkish-text-classification")
+            nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
+
+            # Metni sınıflandırma
+            result = nlp(topic_content)
+
+            # Konuyu tahmin et
+            if result:
+                label_key = result[0]['label']
+                code_to_label = {
+                    'world': 'dünya',
+                    'economy': 'ekonomi',
+                    'culture': 'kültür',
+                    'health': 'sağlık',
+                    'politics': 'siyaset',
+                    'sport': 'spor',
+                    'technology': 'teknoloji'
+                }
+                predicted_label = code_to_label.get(label_key, 'Bilinmeyen')
+
+                # Yeni konuyu oluştur
+                new_topic = Post(title=topic_title, content=topic_content, author=request.user, topic=predicted_label)
+                new_topic.save()
+
+                return redirect('post_detail', author=request.user.username, slug=new_topic.slug)
     else:
         forms = NewContentForm()
     return render(request, 'create_topic.html', {'form': forms})

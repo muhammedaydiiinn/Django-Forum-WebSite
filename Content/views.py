@@ -40,7 +40,7 @@ def post_detail(request, author, slug):
                                   'author': comment.author.username,
                                   'created_at': (comment.created_at + timedelta(hours=3)).strftime("%Y/%m/%d %H:%M:%S")}
                                  for comment in post.comments.all()]
-                return JsonResponse({'comments': comments_data})
+                return JsonResponse({'comments': comments_data, 'topic': post.topic})
         else:
             form = CommentForm()
 
@@ -50,10 +50,10 @@ def post_detail(request, author, slug):
                           'author': comment.author.username,
                           'created_at': (comment.created_at + timedelta(hours=3)).strftime("%Y/%m/%d %H:%M:%S")}
                          for comment in comments]
-        return JsonResponse({'comments': comments_data})
+        return JsonResponse({'comments': comments_data, 'topic': post.topic})
 
     # Diğer durumlarda, gönderiyi ve yorumları render et
-    post_list = list(queryset.values('id', 'author__username', 'title', 'content', 'slug', 'likes', 'created_at'))
+    post_list = list(queryset.values('id', 'author__username', 'title', 'content', 'slug', 'likes', 'created_at', 'topic'))
     for post_item in post_list:
         post_item['created_at'] = timezone.localtime(post_item['created_at']).strftime('%Y-%m-%d %H:%M:%S')
 

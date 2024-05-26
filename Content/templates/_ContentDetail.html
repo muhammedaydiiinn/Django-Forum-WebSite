@@ -34,6 +34,7 @@
                     <h5 class="card-title">{{ post.title|title }}</h5>
                     <p class="card-text">Yazar: {{ post.author.username }}</p>
                     <p class="card-text">Oluşturulma Tarihi: {{ post.created_at }}</p>
+                    <p class="card-text">Konu: {{ post.topic|title }}</p> <!-- Konu eklendi -->
                 </div>
                 {% if request.user.is_authenticated and request.user == post.author %}
                     <div>
@@ -43,6 +44,7 @@
                 {% endif %}
             </div>
         </div>
+
 
         <div class="card-body">
             <p class="card-text">{{ post.content | safe }}</p>
@@ -98,7 +100,8 @@
                 <div class="row align-items-center">
                     <div class="col-md-3">
                         <button type="submit" class="btn btn-sm btn-outline-secondary mt-2">Gönder</button>
-                        <div class="spinner-border spinner-border-sm ml-5" role="status" style="display: none;vertical-align: -.500em !important;"></div>
+                        <div class="spinner-border spinner-border-sm ml-5" role="status"
+                             style="display: none;vertical-align: -.500em !important;"></div>
                     </div>
                 </div>
             </form>

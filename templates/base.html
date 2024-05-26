@@ -29,24 +29,32 @@
             font-style: normal;
         }
 
-        /* Genel scrollbar stilleri */
+        /* Tüm scroll bar özelliklerini kaldır */
         ::-webkit-scrollbar {
-            width: 5px; /* scrollbar genişliği */
+            display: none;
         }
 
-        /* Track (çubuğun arkası) */
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1; /* arkadaki rengi */
+        /* Kaydırıldığında görünecek scrollbar */
+        body {
+            -ms-overflow-style: none; /* IE ve Edge için */
+            scrollbar-width: none; /* Firefox için */
         }
 
-        /* Handle (çubuk) */
-        ::-webkit-scrollbar-thumb {
-            background: #888; /* çubuk rengi */
+        body::-webkit-scrollbar {
+            width: 5px; /* Kaydırma çubuğu genişliği */
         }
 
-        /* Handle on hover (üzerine gelindiğinde) */
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555; /* çubuk rengi */
+        body::-webkit-scrollbar-track {
+            background: transparent; /* Arkaplanı şeffaf yap */
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background: #888; /* Çubuk rengi */
+            border-radius: 10px; /* Çubuk kenarını yuvarla */
+        }
+
+        body::-webkit-scrollbar-thumb:hover {
+            background: #555; /* Üzerine gelindiğinde çubuk rengi */
         }
     </style>
 </head>
@@ -56,14 +64,12 @@
     <div class="container">
         <a class="navbar-brand m-2" href="{% url 'home' %}">AydınKafa Forum</a>
         {% if user.is_authenticated %}
-
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarSupportedContent"
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
         {% endif %}
-
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             {% include 'Home/_UserNavbar.html' %}
         </div>
