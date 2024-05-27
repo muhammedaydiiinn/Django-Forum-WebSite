@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block css_files %}
+    {# css dosyaları #}
+{% endblock %}
+
+{% block title %}{{ topic_name|title }}{% endblock %}
+{% block content_nav %}
+{% endblock %}
+{% block content_body %}
+    <div class="container mt-3">
+        {% include 'Home/_search.html' %}
+        <div class="row justify-content-center">
+            <div class="col-12 text-center">
+                {% for topic in topics %}
+                    {% if forloop.counter0 == 0 %}
+                        <a href="{% url 'topic_posts' topic.topic %}"
+                           class="btn btn-primary mx-2">{{ topic.topic|title }}</a>
+                    {% elif forloop.counter0 == 1 %}
+                        <a href="{% url 'topic_posts' topic.topic %}"
+                           class="btn btn-success mx-2">{{ topic.topic|title }}</a>
+                    {% elif forloop.counter0 == 2 %}
+                        <a href="{% url 'topic_posts' topic.topic %}"
+                           class="btn btn-danger mx-2">{{ topic.topic|title }}</a>
+                    {% elif forloop.counter0 == 3 %}
+                        <a href="{% url 'topic_posts' topic.topic %}"
+                           class="btn btn-warning mx-2">{{ topic.topic|title }}</a>
+                    {% elif forloop.counter0 == 4 %}
+                        <a href="{% url 'topic_posts' topic.topic %}"
+                           class="btn btn-info mx-2">{{ topic.topic|title }}</a>
+                    {% elif forloop.counter0 == 5 %}
+                        <a href="{% url 'topic_posts' topic.topic %}"
+                           class="btn btn-secondary mx-2">{{ topic.topic|title }}</a>
+                    {% elif forloop.counter0 == 6 %}
+                        <a href="{% url 'topic_posts' topic.topic %}"
+                           class="btn btn-dark mx-2">{{ topic.topic|title }}</a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        <h3>{{ topic_name|title }} Konusu Altındaki Gönderiler</h3>
+        <hr>
+        <div class="row">
+            {% for post in posts %}
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <div class="card mb-3 shadow">
+                        <div class="card-header d-flex justify-content-between align-items-center"
+                             style="height: 4rem; overflow: hidden;">
+                            <strong class="card-title"
+                                    style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis;">{{ post.title|title }}</strong>
+                            {% if post.slug %}
+                                <a href="{% url 'post_detail' post.author post.slug %}"
+                                   class="btn btn-secondary">Detay</a>
+                            {% else %}
+                                <p>Hata</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-body" style="overflow: hidden;  height: 4rem">
+                            <p class="card-text" id="content-{{ post.id }}"
+                               style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ post.content }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">Oluşturma Tarihi: {{ post.created_at }}</small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

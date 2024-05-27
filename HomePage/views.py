@@ -21,15 +21,20 @@ def home_view(request):
     newest_posts = queryset.order_by('-created_at')[:5]
 
     # Zamanı biçimlendir ve JSON'a dönüştür
-    post_list = list(newest_posts.values('id', 'author__username', 'title', 'content', 'slug', 'likes', 'created_at'))
+    post_list = list(
+        newest_posts.values('id', 'author__username', 'title', 'content', 'slug', 'likes', 'created_at', 'topic'))
     for post in post_list:
         post['created_at'] = timezone.localtime(post['created_at']).strftime('%Y-%m-%d %H:%M:%S')
+
+    # Mevcut konuları alın
+    topics = Post.objects.values('topic').distinct()
 
     # JSON verisini ana bağlama ekleyin
     context = {
         'popular_posts': popular_posts,
         'newest_posts': newest_posts_page,
-        'qs_json': json.dumps(post_list)
+        'qs_json': json.dumps(post_list),
+        'topics': topics,
     }
 
     # Arama sonuçlarını kontrol et
@@ -42,6 +47,47 @@ def home_view(request):
 
     # render fonksiyonu ile template'i döndür
     return render(request, "Home/Home_Page.html", context)
+
+
+class TopicPostsView(ListView):
+    model = Post
+    template_name = 'Home/TopicContent.html'
+    context_object_name = 'posts'
+
+    def get_queryset(self):
+        # Konuya göre gönderileri getir
+        topic = self.kwargs.get('topic')
+        return Post.objects.filter(topic=topic)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Konu adını ve tüm konuları içeren bir bağlam oluştur
+        context['topic_name'] = self.kwargs.get('topic')
+        context['topics'] = Post.objects.values('topic').distinct()
+
+        # Tüm postların JSON temsili için post_list oluştur
+        queryset = self.get_queryset()
+        post_list = list(
+            queryset.values('id', 'author__username', 'title', 'content', 'slug', 'likes', 'created_at', 'topic'))
+        for post_item in post_list:
+            post_item['created_at'] = timezone.localtime(post_item['created_at']).strftime('%Y-%m-%d %H:%M:%S')
+        context['qs_json'] = json.dumps(post_list)
+
+        return context
+
+
+def search_view(request):
+    queryset = Post.objects.all()
+    newest_posts = queryset.order_by('-created_at')[:5]
+    post_list = list(newest_posts.values('id', 'author__username', 'title', 'content', 'slug', 'likes', 'created_at'))
+    for post in post_list:
+        post['created_at'] = timezone.localtime(post['created_at']).strftime('%Y-%m-%d %H:%M:%S')
+
+    searched = request.POST.get('searched', '')
+    searched_posts = Post.objects.filter(title__icontains=searched) | Post.objects.filter(content__icontains=searched)
+
+    context = {'searched_posts': searched_posts, 'searched': searched, 'qs_json': json.dumps(post_list)}
+    return render(request, 'Home/searchPage.html', context)
 
 
 class PostListView(ListView):
@@ -60,33 +106,56 @@ def create_topic(request):
             topic_title = forms.cleaned_data['topic_title']
             topic_content = forms.cleaned_data['topic_content']
 
-            # Metin sınıflandırma modelini yükleme
-            tokenizer = AutoTokenizer.from_pretrained("savasy/bert-turkish-text-classification")
-            model = AutoModelForSequenceClassification.from_pretrained("savasy/bert-turkish-text-classification")
-            nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
+            # Metin sınıflandırma modellerini yükleme
+            tokenizer1 = AutoTokenizer.from_pretrained("gurkan08/bert-turkish-text-classification")
+            model1 = AutoModelForSequenceClassification.from_pretrained("gurkan08/bert-turkish-text-classification")
+            nlp1 = pipeline("sentiment-analysis", model=model1, tokenizer=tokenizer1)
+
+            tokenizer2 = AutoTokenizer.from_pretrained("savasy/bert-turkish-text-classification")
+            model2 = AutoModelForSequenceClassification.from_pretrained("savasy/bert-turkish-text-classification")
+            nlp2 = pipeline("sentiment-analysis", model=model2, tokenizer=tokenizer2)
 
             # Metni sınıflandırma
-            result = nlp(topic_content)
+            result1 = nlp1(topic_content)
+            result2 = nlp2(topic_content)
 
-            # Konuyu tahmin et
-            if result:
-                label_key = result[0]['label']
-                code_to_label = {
-                    'world': 'dünya',
-                    'economy': 'ekonomi',
-                    'culture': 'kültür',
-                    'health': 'sağlık',
-                    'politics': 'siyaset',
-                    'sport': 'spor',
-                    'technology': 'teknoloji'
-                }
-                predicted_label = code_to_label.get(label_key, 'Bilinmeyen')
+            # Tahmin edilen konuları birleştir
+            label_dict1 = {
+                'ekonomi': 'economy',
+                'spor': 'sport',
+                'saglik': 'health',
+                'kultur_sanat': 'culture',
+                'bilim_teknoloji': 'technology',
+                'egitim': 'education'
+            }
+            label_dict2 = {
+                'world': 'dünya',
+                'economy': 'ekonomi',
+                'culture': 'kültür',
+                'health': 'sağlık',
+                'politics': 'siyaset',
+                'sport': 'spor',
+                'technology': 'teknoloji'
+            }
 
-                # Yeni konuyu oluştur
-                new_topic = Post(title=topic_title, content=topic_content, author=request.user, topic=predicted_label)
-                new_topic.save()
+            topic_scores = {}
+            for result in result1:
+                label1 = label_dict1.get(result['label'], 'Bilinmeyen')
+                topic_scores[label1] = topic_scores.get(label1, 0) + result['score']
 
-                return redirect('post_detail', author=request.user.username, slug=new_topic.slug)
+            for result in result2:
+                label2 = label_dict2.get(result['label'], 'Bilinmeyen')
+                topic_scores[label2] = topic_scores.get(label2, 0) + result['score']
+
+            # En yüksek skora sahip konuyu al
+            max_score = max(topic_scores.values())
+            predicted_label = [label for label, score in topic_scores.items() if score == max_score][0]
+
+            # Yeni konuyu oluştur
+            new_topic = Post(title=topic_title, content=topic_content, author=request.user, topic=predicted_label)
+            new_topic.save()
+
+            return redirect('post_detail', author=request.user.username, slug=new_topic.slug)
     else:
         forms = NewContentForm()
     return render(request, 'create_topic.html', {'form': forms})
@@ -130,19 +199,3 @@ def check_like_status(request, author, slug):
 def profile_image_view(request):
     profile_image_url = request.user.profile.profile_pic.url
     return JsonResponse({'profile_pic_url': profile_image_url})
-
-
-def search_view(request):
-    queryset = Post.objects.all()
-    newest_posts = queryset.order_by('-created_at')[:5]
-    post_list = list(newest_posts.values('id', 'author__username', 'title', 'content', 'slug', 'likes', 'created_at'))
-    for post in post_list:
-        post['created_at'] = timezone.localtime(post['created_at']).strftime('%Y-%m-%d %H:%M:%S')
-
-    searched = request.POST.get('searched', '')
-    # Kelimeye göre gönderileri filtrele
-    searched_posts = Post.objects.filter(title__icontains=searched) | Post.objects.filter(content__icontains=searched)
-
-    # JSON verisini de döndür
-    context = {'searched_posts': searched_posts, 'searched': searched, 'qs_json': json.dumps(post_list)}
-    return render(request, 'Home/searchPage.html', context)

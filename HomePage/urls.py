@@ -15,4 +15,5 @@ urlpatterns = [
     path('get-profile-image/', views.profile_image_view, name='get_profile_image_url'),
     path("profile/", include("Profile.urls")),
     path("search", views.search_view, name='search_view'),
+    path('topic/<str:topic>', views.TopicPostsView.as_view(), name='topic_posts'),
 ]

@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 
+
 class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
@@ -25,29 +26,54 @@ class Post(models.Model):
         # İçerik kaydedildikten sonra konuyu tahmin et
         if not self.topic:
             # Metin sınıflandırma modelini yükleme
-            tokenizer = AutoTokenizer.from_pretrained("savasy/bert-turkish-text-classification")
-            model = AutoModelForSequenceClassification.from_pretrained("savasy/bert-turkish-text-classification")
-            nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
+            tokenizer1 = AutoTokenizer.from_pretrained("gurkan08/bert-turkish-text-classification")
+            model1 = AutoModelForSequenceClassification.from_pretrained("gurkan08/bert-turkish-text-classification")
+            nlp1 = pipeline("sentiment-analysis", model=model1, tokenizer=tokenizer1)
+
+            tokenizer2 = AutoTokenizer.from_pretrained("savasy/bert-turkish-text-classification")
+            model2 = AutoModelForSequenceClassification.from_pretrained("savasy/bert-turkish-text-classification")
+            nlp2 = pipeline("sentiment-analysis", model=model2, tokenizer=tokenizer2)
 
             # Metni sınıflandırma
-            result = nlp(self.content)
+            result1 = nlp1(self.content)
+            result2 = nlp2(self.content)
 
-            # Tahmin edilen konuyu al
-            if result:
-                label_key = result[0]['label']
-                code_to_label = {
-                    'world': 'dünya',
-                    'economy': 'ekonomi',
-                    'culture': 'kültür',
-                    'health': 'sağlık',
-                    'politics': 'siyaset',
-                    'sport': 'spor',
-                    'technology': 'teknoloji'
-                }
-                predicted_label = code_to_label.get(label_key, 'Bilinmeyen')
-                self.topic = predicted_label
-                self.save()  # Konuyu kaydetmek için tekrar kaydetme
+            # En yüksek skorlu çıktıyı seç
+            if result1[0]['score'] > result2[0]['score']:
+                combined_label = result1[0]['label']
+            else:
+                combined_label = result2[0]['label']
 
+            # Etiketlerin daha açıklayıcı karşılıkları
+            label_dict1 = {
+                'ekonomi': 'economy',
+                'spor': 'sport',
+                'saglik': 'health',
+                'kultur_sanat': 'culture',
+                'bilim_teknoloji': 'technology',
+                'egitim': 'education'
+            }
+
+            label_dict2 = {
+                'LABEL_0': 'world',
+                'LABEL_1': 'economy',
+                'LABEL_2': 'culture',
+                'LABEL_3': 'health',
+                'LABEL_4': 'politics',
+                'LABEL_5': 'sport',
+                'LABEL_6': 'technology',
+                'LABEL_7': 'education'
+            }
+
+            # Etiketleri uygun hale getir
+            if combined_label in label_dict1:
+                self.topic = label_dict1[combined_label]
+            elif combined_label in label_dict2:
+                self.topic = label_dict2[combined_label]
+            else:
+                self.topic = 'Bilinmeyen'
+
+            self.save()  # Konuyu kaydetmek için tekrar kaydetme
 
     def __str__(self):
         return self.title
