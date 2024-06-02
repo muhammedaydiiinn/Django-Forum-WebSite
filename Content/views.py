@@ -38,7 +38,7 @@ def post_detail(request, author, slug):
                 # Yorumları güncelleyerek JSON formatında gönder
                 comments_data = [{'content': comment.content,
                                   'author': comment.author.username,
-                                  'created_at': (comment.created_at + timedelta(hours=3)).strftime("%Y/%m/%d %H:%M:%S")}
+                                  'created_at': (comment.created_at + timedelta(hours=3)).strftime("%d/%m/%Y %H:%M:%S")}
                                  for comment in post.comments.all()]
                 return JsonResponse({'comments': comments_data, 'topic': post.topic})
         else:
@@ -48,14 +48,14 @@ def post_detail(request, author, slug):
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
         comments_data = [{'content': comment.content,
                           'author': comment.author.username,
-                          'created_at': (comment.created_at + timedelta(hours=3)).strftime("%Y/%m/%d %H:%M:%S")}
+                          'created_at': (comment.created_at + timedelta(hours=3)).strftime("%d/%m/%Y %H:%M:%S")}
                          for comment in comments]
         return JsonResponse({'comments': comments_data, 'topic': post.topic})
 
     # Diğer durumlarda, gönderiyi ve yorumları render et
     post_list = list(queryset.values('id', 'author__username', 'title', 'content', 'slug', 'likes', 'created_at', 'topic'))
     for post_item in post_list:
-        post_item['created_at'] = timezone.localtime(post_item['created_at']).strftime('%Y-%m-%d %H:%M:%S')
+        post_item['created_at'] = timezone.localtime(post_item['created_at']).strftime('%d-%m-%Y %H:%M:%S')
 
     return render(request, 'BaseContent.html',
                   {'post': post, 'comments': comments, 'form': form, 'qs_json': json.dumps(post_list)})

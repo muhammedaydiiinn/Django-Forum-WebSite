@@ -10,7 +10,7 @@ class Post(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     likes = models.IntegerField(default=0)  # Yeni bir alan: Beğeni sayısı
-    slug = models.SlugField(blank=True, max_length=100, unique=True, db_index=True, editable=False)
+    slug = models.SlugField(blank=True, max_length=100, unique=True, db_index=True, editable=True)
     topic = models.CharField(max_length=50, blank=True)  # Konu alanı
 
     def save(self, *args, **kwargs):

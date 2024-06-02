@@ -70,7 +70,7 @@ class TopicPostsView(ListView):
         post_list = list(
             queryset.values('id', 'author__username', 'title', 'content', 'slug', 'likes', 'created_at', 'topic'))
         for post_item in post_list:
-            post_item['created_at'] = timezone.localtime(post_item['created_at']).strftime('%Y-%m-%d %H:%M:%S')
+            post_item['created_at'] = timezone.localtime(post_item['created_at']).strftime('%d-%m-%Y %H:%M:%S')
         context['qs_json'] = json.dumps(post_list)
 
         return context
@@ -81,7 +81,7 @@ def search_view(request):
     newest_posts = queryset.order_by('-created_at')[:5]
     post_list = list(newest_posts.values('id', 'author__username', 'title', 'content', 'slug', 'likes', 'created_at'))
     for post in post_list:
-        post['created_at'] = timezone.localtime(post['created_at']).strftime('%Y-%m-%d %H:%M:%S')
+        post['created_at'] = timezone.localtime(post['created_at']).strftime('%d-%m-%Y %H:%M:%S')
 
     searched = request.POST.get('searched', '')
     searched_posts = Post.objects.filter(title__icontains=searched) | Post.objects.filter(content__icontains=searched)
