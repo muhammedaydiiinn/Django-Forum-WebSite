@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'ForumSitesi.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -92,11 +92,15 @@ DATABASES = {
 '''
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'forum_db',  # Veritabanı adını buraya yazın
+        'USER': 'postgres',    # PostgreSQL kullanıcı adınızı buraya yazın
+        'PASSWORD': '2676',         # PostgreSQL şifrenizi buraya yazın
+        'HOST': 'localhost',         # Genelde localhost kullanılır
+        'PORT': '5432',              # PostgreSQL'in varsayılan portu
     }
 }
-'''
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
